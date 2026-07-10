@@ -3,7 +3,7 @@
 REST API for managing tasks. Supports full CRUD operations with role-based access control, filtering, search, sorting, and pagination.
 
 <aside>
-    <strong>Base URL</strong>: <code>http://localhost</code>
+    <strong>Base URL</strong>: <code></code>
 </aside>
 
     This documentation aims to provide all the information you need to work with our API.

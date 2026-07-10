@@ -26,7 +26,7 @@
             </style>
 
     <script>
-        var tryItOutBaseUrl = "http://localhost";
+        var tryItOutBaseUrl = "";
         var useCsrf = Boolean();
         var csrfUrl = "/sanctum/csrf-cookie";
     </script>
@@ -119,7 +119,7 @@
         <h1 id="introduction">Introduction</h1>
 <p>REST API for managing tasks. Supports full CRUD operations with role-based access control, filtering, search, sorting, and pagination.</p>
 <aside>
-    <strong>Base URL</strong>: <code>http://localhost</code>
+    <strong>Base URL</strong>: <code></code>
 </aside>
 <pre><code>This documentation aims to provide all the information you need to work with our API.
 
@@ -149,7 +149,7 @@ You can switch the language used with the tabs at the top right (or from the nav
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "http://localhost/api/login" \
+    "/api/login" \
     --header "Authorization: Bearer Bearer {your-token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
@@ -163,7 +163,7 @@ You can switch the language used with the tabs at the top right (or from the nav
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost/api/login"
+    "/api/login"
 );
 
 const headers = {
@@ -324,7 +324,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "http://localhost/api/logout" \
+    "/api/logout" \
     --header "Authorization: Bearer Bearer {your-token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -332,7 +332,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost/api/logout"
+    "/api/logout"
 );
 
 const headers = {
@@ -450,7 +450,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://localhost/api/user" \
+    --get "/api/user" \
     --header "Authorization: Bearer Bearer {your-token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -458,7 +458,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost/api/user"
+    "/api/user"
 );
 
 const headers = {
@@ -597,7 +597,7 @@ and pagination via query parameters.</p>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://localhost/api/tasks" \
+    --get "/api/tasks" \
     --header "Authorization: Bearer Bearer {your-token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -605,7 +605,7 @@ and pagination via query parameters.</p>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost/api/tasks"
+    "/api/tasks"
 );
 
 const headers = {
@@ -743,7 +743,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "http://localhost/api/tasks" \
+    "/api/tasks" \
     --header "Authorization: Bearer Bearer {your-token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
@@ -758,7 +758,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost/api/tasks"
+    "/api/tasks"
 );
 
 const headers = {
@@ -934,7 +934,7 @@ Must be one of:
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://localhost/api/tasks/1" \
+    --get "/api/tasks/1" \
     --header "Authorization: Bearer Bearer {your-token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -942,7 +942,7 @@ Must be one of:
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost/api/tasks/1"
+    "/api/tasks/1"
 );
 
 const headers = {
@@ -1093,7 +1093,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request PUT \
-    "http://localhost/api/tasks/1" \
+    "/api/tasks/1" \
     --header "Authorization: Bearer Bearer {your-token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
@@ -1108,7 +1108,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost/api/tasks/1"
+    "/api/tasks/1"
 );
 
 const headers = {
@@ -1301,7 +1301,7 @@ Must be one of:
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "http://localhost/api/tasks/1" \
+    "/api/tasks/1" \
     --header "Authorization: Bearer Bearer {your-token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -1309,7 +1309,7 @@ Must be one of:
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost/api/tasks/1"
+    "/api/tasks/1"
 );
 
 const headers = {
@@ -1440,19 +1440,19 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request PATCH \
-    "http://localhost/api/tasks/1/status" \
+    "/api/tasks/1/status" \
     --header "Authorization: Bearer Bearer {your-token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"status\": \"in_progress\"
+    \"status\": \"completed\"
 }"
 </code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost/api/tasks/1/status"
+    "/api/tasks/1/status"
 );
 
 const headers = {
@@ -1462,7 +1462,7 @@ const headers = {
 };
 
 let body = {
-    "status": "in_progress"
+    "status": "completed"
 };
 
 fetch(url, {
@@ -1579,10 +1579,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="status"                data-endpoint="PATCHapi-tasks--task_id--status"
-               value="in_progress"
+               value="completed"
                data-component="body">
     <br>
-<p>Example: <code>in_progress</code></p>
+<p>Example: <code>completed</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>pending</code></li> <li><code>in_progress</code></li> <li><code>completed</code></li></ul>
         </div>

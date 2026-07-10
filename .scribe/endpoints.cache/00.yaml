@@ -531,7 +531,7 @@ endpoints:
         name: status
         description: ''
         required: true
-        example: in_progress
+        example: completed
         type: string
         enumValues:
           - pending
@@ -541,7 +541,7 @@ endpoints:
         nullable: false
         deprecated: false
     cleanBodyParameters:
-      status: in_progress
+      status: completed
     fileParameters: []
     responses: []
     responseFields: []
