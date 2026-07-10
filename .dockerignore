@@ -1,0 +1,15 @@
+vendor
+node_modules
+frontend/node_modules
+frontend/.output
+frontend/.nuxt
+.git
+.env
+.env.*
+*.md
+.idea
+.vscode
+tests
+database/database.sqlite
+docker-compose.yml
+Makefile
