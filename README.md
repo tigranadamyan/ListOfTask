@@ -12,22 +12,53 @@ Production-ready приложение для управления задачам
 | Авторизация | Laravel Sanctum (API-токены) |
 | Frontend | Nuxt 4, Vue 3.5, TypeScript |
 | Управление состоянием | Pinia |
-| Стили | Tailwind CSS 4 |
+| Стили | Tailwind CSS 3 |
 | Уведомления | vue-sonner |
-| Контейнеризация | Docker Compose |
-| Тестирование | PHPUnit 12 (26 тестов) |
+| Контейнеризация | Docker Compose + Nginx |
+| Тестирование | PHPUnit 12 (33 теста), Vitest (13 тестов) |
+| API-документация | Scribe (OpenAPI) |
 
 ---
 
 ## Быстрый старт (Docker)
 
 ```bash
-docker compose up -d
+git clone https://github.com/tigranadamyan/ListOfTask.git
+cd ListOfTask
+cp .env.example .env
+make up
 ```
 
-- API: http://localhost:8000
-- Frontend: http://localhost:3000
-- Тестовый аккаунт: `test@example.com` / `password`
+Всё автоматически: сборка образов, миграции, сидинг демо-данных, запуск сервисов.
+
+### Сервисы
+
+| Сервис | URL | Описание |
+|---|---|---|
+| Приложение | http://localhost:8080 | Frontend (Nuxt SSR) через Nginx |
+| API | http://localhost:8080/api | REST API (Laravel) через Nginx |
+| API Docs | http://localhost:8080/api/docs | OpenAPI/Swagger документация |
+| API (напрямую) | http://localhost:8000 | Laravel без прокси (для отладки) |
+
+### Демо-аккаунты
+
+| Роль | Email | Пароль |
+|---|---|---|
+| Администратор | `admin@example.com` | `password` |
+| Обычный пользователь | `user@example.com` | `password` |
+
+### Команды Make
+
+```bash
+make up          # Сборка + запуск всего стека
+make down        # Остановка контейнеров
+make restart     # Перезапуск контейнеров
+make logs        # Просмотр логов (в реальном времени)
+make build       # Полная пересборка образов (без кэша)
+make clean       # Удаление контейнеров, образов и volume'ов
+make shell-api   # Shell в контейнер API
+make shell-frontend  # Shell в контейнер Frontend
+```
 
 ---
 
@@ -43,16 +74,10 @@ docker compose up -d
 ### Backend
 
 ```bash
-# Установка зависимостей
 composer install
-
-# Генерация ключа приложения
+cp .env.example .env
 php artisan key:generate
-
-# Миграции и сидинг демо-данных
 php artisan migrate --seed
-
-# Запуск dev-сервера
 php artisan serve --port=8000
 ```
 
@@ -60,13 +85,39 @@ php artisan serve --port=8000
 
 ```bash
 cd frontend
-
-# Установка зависимостей
 npm install
-
-# Запуск dev-сервера
 npm run dev
 ```
+
+---
+
+## Архитектура Docker
+
+```
+                    ┌─────────────┐
+   :8080 ─────────►│   Nginx     │
+                    │  (reverse   │
+                    │   proxy)    │
+                    └──┬──────┬──┘
+                       │      │
+            /api/* ────┘      └──── /* (остальное)
+               │                    │
+        ┌──────▼──────┐    ┌───────▼──────┐
+        │   Laravel   │    │    Nuxt 4    │
+        │   (PHP-FPM) │    │  (Node SSR)  │
+        │   :8000     │    │   :3000      │
+        └─────────────┘    └──────────────┘
+               │
+        ┌──────▼──────┐
+        │   SQLite    │
+        │ (volume)    │
+        └─────────────┘
+```
+
+- **Nginx** — единая точка входа, маршрутизация по URL-путям
+- **API-контейнер** — entrypoint автоматически создаёт `.env`, генерирует ключ, запускает миграции и сидинг (только при пустой БД)
+- **Frontend-контейнер** — multi-stage сборка (build + runtime), SSR с server/client разделением API URL
+- **Volume** `api-database` — персистентное хранилище SQLite между перезапусками
 
 ---
 
@@ -75,19 +126,24 @@ npm run dev
 ### Backend (`.env`)
 
 ```env
+APP_NAME=ЛистЗадач
+APP_ENV=local
+APP_DEBUG=true
 APP_URL=http://localhost:8000
 DB_CONNECTION=sqlite
-FRONTEND_URL=http://localhost:3000
-SANCTUM_STATEFUL_DOMAINS=localhost:3000
-SANCTUM_TOKEN_PREFIX=todo_
+FRONTEND_URL=http://localhost:8080
+SANCTUM_STATEFUL_DOMAINS=localhost,localhost:8080
 ```
 
 ### Frontend (`frontend/nuxt.config.ts`)
 
 ```ts
 runtimeConfig: {
+  // SSR: обращается к API внутри Docker-сети
+  apiBaseUrl: 'http://api:8000/api',
   public: {
-    apiBaseUrl: 'http://localhost:8000/api',
+    // Клиент: относительный URL через Nginx
+    apiBaseUrl: '/api',
   },
 }
 ```
@@ -110,7 +166,7 @@ runtimeConfig: {
 |---|---|---|
 | `GET` | `/api/tasks` | Список (пагинация, фильтрация) |
 | `POST` | `/api/tasks` | Создать задачу |
-| `GET` | `/api/tasks/{task}` | Просмотр (только владелец) |
+| `GET` | `/api/tasks/{task}` | Просмотр (только владелец или админ) |
 | `PUT` | `/api/tasks/{task}` | Обновить (только владелец) |
 | `PATCH` | `/api/tasks/{task}/status` | Изменить только статус |
 | `DELETE` | `/api/tasks/{task}` | Удалить (только владелец) |
@@ -166,15 +222,6 @@ Frontend и backend — отдельные проекты, общающиеся 
 - **Тестируемость** — unit-тесты бизнес-логики без HTTP-слоя
 - **Тонкие контроллеры** — контроллеры только обрабатывают HTTP-задачи (парсинг запроса, форматирование ответа)
 
-### Почему без Repository Pattern
-
-Eloquent уже предоставляет богатый query builder и active record. Добавление Repository поверх Eloquent:
-- Добавит абстракцию без пользы для данного масштаба
-- Дублирует функциональность Eloquent scopes
-- Увеличит накладные расходы без значимого разделения
-
-`TaskService` + Eloquent scopes + методы query builder дают достаточное разделение.
-
 ### Почему PHP 8.4 Enum для статуса
 
 ```php
@@ -196,41 +243,44 @@ enum TaskStatus: string {
 ```
 ListOfTask/
 ├── app/
-│   ├── Enums/TaskStatus.php          # Enum статусов задачи
+│   ├── Enums/TaskStatus.php              # Enum статусов задачи
 │   ├── Http/
-│   │   ├── Controllers/Api/          # REST-контроллеры
-│   │   ├── Requests/Task/            # Валидация форм
-│   │   └── Resources/                # API-ресурсы
+│   │   ├── Controllers/Api/              # REST-контроллеры
+│   │   ├── Requests/Task/                # Валидация форм
+│   │   └── Resources/                    # API-ресурсы
 │   ├── Models/
-│   │   ├── User.php                  # Пользователь с Sanctum
-│   │   └── Task.php                  # Задача со scope-методами
-│   ├── Policies/TaskPolicy.php       # Авторизация: только владелец
-│   └── Services/TaskService.php      # Слой бизнес-логики
-├── bootstrap/app.php                 # Обработчик исключений, маршрутизация
-├── config/                           # Конфигурация Laravel
+│   │   ├── User.php                      # Пользователь с Sanctum
+│   │   └── Task.php                      # Задача со scope-методами
+│   ├── Policies/TaskPolicy.php           # Авторизация: владелец + админ
+│   └── Services/TaskService.php          # Слой бизнес-логики
 ├── database/
-│   ├── factories/                    # Фабрики моделей
-│   ├── migrations/                   # Миграции БД
-│   └── seeders/                      # Демо-данные
-├── routes/api.php                    # API-маршруты
+│   ├── factories/                        # Фабрики моделей
+│   ├── migrations/                       # Миграции БД
+│   └── seeders/                          # Демо-данные (4 пользователя, 64 задачи)
 ├── tests/
-│   ├── Feature/Auth/                 # Тесты авторизации
-│   ├── Feature/Task/                 # Тесты CRUD задач
-│   └── Unit/TaskPolicyTest.php       # Unit-тесты политик
-├── frontend/                         # Приложение Nuxt 4
+│   ├── Feature/Auth/                     # Тесты авторизации
+│   ├── Feature/Task/                     # Тесты CRUD задач (включая админа)
+│   └── Unit/TaskPolicyTest.php           # Unit-тесты политик
+├── frontend/                             # Приложение Nuxt 4
 │   ├── components/
-│   │   ├── ui/                       # Переиспользуемые UI-компоненты
-│   │   └── task/                     # Компоненты задач
-│   ├── composables/                  # Vue-композаблы
-│   ├── layouts/                      # Макеты страниц
-│   ├── middleware/                    # Middleware маршрутов
-│   ├── pages/                        # Страницы (login, dashboard)
-│   ├── services/api.ts               # HTTP-клиент
-│   ├── stores/                       # Управление состоянием Pinia
-│   └── types/                        # TypeScript-интерфейсы
-├── Dockerfile                        # Контейнер Laravel
-├── frontend/Dockerfile               # Контейнер Nuxt
-└── docker-compose.yml                # Оркестрация
+│   │   ├── ui/                           # Переиспользуемые UI-компоненты
+│   │   └── task/                         # Компоненты задач
+│   ├── composables/                      # Vue-композаблы
+│   ├── layouts/                          # Макеты страниц
+│   ├── middleware/                        # Middleware маршрутов
+│   ├── pages/                            # Страницы (login, dashboard)
+│   ├── services/api.ts                   # HTTP-клиент (SSR/client разделение)
+│   ├── stores/                           # Управление состоянием Pinia
+│   ├── tests/                            # Vitest: store + компоненты
+│   └── types/                            # TypeScript-интерфейсы
+├── nginx/nginx.conf                      # Nginx: reverse proxy конфигурация
+├── config/scribe.php                     # OpenAPI/Swagger документация
+├── Dockerfile                            # Контейнер Laravel
+├── frontend/Dockerfile                   # Контейнер Nuxt (multi-stage)
+├── docker-compose.yml                    # Оркестрация (api + frontend + nginx)
+├── entrypoint.sh                         # Runtime: key, migrate, seed, cache
+├── Makefile                              # Команды сборки и запуска
+└── .env.example                          # Шаблон переменных окружения
 ```
 
 ---
@@ -238,24 +288,24 @@ ListOfTask/
 ## Тестирование
 
 ```bash
-# Тесты backend (26 тестов, 52 assertion)
+# Тесты backend (33 теста, 62 assertions)
 php artisan test
 
-# Проверка типов frontend
-cd frontend && npx nuxi typecheck
+# Тесты frontend (13 тестов)
+cd frontend && npm test
 ```
 
 ---
 
 ## Демо-данные
 
-После `php artisan db:seed` база содержит:
+При первом запуске `make up` база автоматически заполняется:
 
-- **3 пользователя** (1 тестовый + 2 с задачами)
-- **62 задачи** (12 для тестового, по 25 у остальных)
+- **4 пользователя** (админ + 3 обычных)
+- **64 задачи** с различными статусами
 - Статусы: ожидает, в работе, завершена
 
-Тестовый аккаунт: `test@example.com` / `password`
+При повторных запусках данные **не пересоздаются** (проверка по количеству пользователей). Для сброса: `make clean && make up`.
 
 ---
 
@@ -264,7 +314,7 @@ cd frontend && npx nuxi typecheck
 - ✅ Авторизация (вход/выход)
 - ✅ CRUD задач (создание, просмотр, редактирование, удаление)
 - ✅ Управление статусом (ожидает → в работе → завершена)
-- ✅ Доступ только владельца (Policy)
+- ✅ Доступ владельца + админа (Policy)
 - ✅ Фильтрация по статусу
 - ✅ Поиск с debounce
 - ✅ Сортировка по сроку, статусу, дате создания, названию
@@ -275,11 +325,12 @@ cd frontend && npx nuxi typecheck
 - ✅ Адаптивный дизайн (моб./планшет/десктоп)
 - ✅ Клиентская валидация форм
 - ✅ Единый JSON-формат ошибок
-- ✅ Поддержка Docker
+- ✅ Docker Compose + Nginx reverse proxy
+- ✅ OpenAPI/Swagger документация (`/api/docs`)
+- ✅ Тесты backend и frontend
 
 ---
 
 ## Лицензия
 
 MIT
-# ListOfTask
