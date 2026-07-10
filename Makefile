@@ -30,7 +30,7 @@ up: .env
 	@echo ""
 	@echo "   🌐 App:       http://localhost:8080"
 	@echo "   📡 API:       http://localhost:8080/api"
-	@echo "   📄 API Docs:  http://localhost:8080/api/docs"
+	@echo "   📄 API Docs:  http://localhost:8080/docs"
 	@echo "   🔧 API direct: http://localhost:8000"
 	@echo ""
 

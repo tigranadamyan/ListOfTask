@@ -37,7 +37,7 @@ make up
 |---|---|---|
 | Приложение | http://localhost:8080 | Frontend (Nuxt SSR) через Nginx |
 | API | http://localhost:8080/api | REST API (Laravel) через Nginx |
-| API Docs | http://localhost:8080/api/docs | OpenAPI/Swagger документация |
+| API Docs | http://localhost:8080/docs | OpenAPI/Swagger документация (Scribe) |
 | API (напрямую) | http://localhost:8000 | Laravel без прокси (для отладки) |
 
 ### Демо-аккаунты

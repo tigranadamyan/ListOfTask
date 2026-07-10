@@ -141,7 +141,7 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          access-control-allow-origin: 'http://localhost:3000'
+          access-control-allow-origin: 'http://localhost'
           access-control-allow-credentials: 'true'
         description: null
     responseFields: []
@@ -188,7 +188,7 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          access-control-allow-origin: 'http://localhost:3000'
+          access-control-allow-origin: 'http://localhost'
           access-control-allow-credentials: 'true'
         description: null
     responseFields: []
@@ -331,7 +331,7 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          access-control-allow-origin: 'http://localhost:3000'
+          access-control-allow-origin: 'http://localhost'
           access-control-allow-credentials: 'true'
         description: null
     responseFields: []
@@ -529,7 +529,7 @@ endpoints:
         name: status
         description: ''
         required: true
-        example: completed
+        example: in_progress
         type: string
         enumValues:
           - pending
@@ -539,7 +539,7 @@ endpoints:
         nullable: false
         deprecated: false
     cleanBodyParameters:
-      status: completed
+      status: in_progress
     fileParameters: []
     responses: []
     responseFields: []
