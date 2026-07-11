@@ -331,6 +331,25 @@ cd frontend && npm test
 
 ---
 
+## Скриншоты
+
+### Вход в аккаунт
+![Login](screenshots/01-login.png)
+
+### Панель задач (администратор)
+![Dashboard](screenshots/02-dashboard-admin.png)
+
+### Создание задачи
+![Create Task](screenshots/03-create-task-modal.png)
+
+### Мобильная версия
+![Mobile](screenshots/04-mobile-view.png)
+
+### API Документация
+![API Docs](screenshots/05-api-docs.png)
+
+---
+
 ## Лицензия
 
 MIT
