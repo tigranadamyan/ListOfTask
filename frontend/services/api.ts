@@ -43,6 +43,15 @@ function getAuthHeaders(): Record<string, string> {
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
+  if (response.status === 401) {
+    if (import.meta.client) {
+      localStorage.removeItem('auth_token')
+      navigateTo('/login')
+    }
+
+    throw new ApiRequestError(`Request failed with status ${response.status}`, response.status)
+  }
+
   if (!response.ok) {
     let errorData: ApiErrorShape | null = null
     try {

@@ -26,6 +26,30 @@
       </div>
     </div>
 
+    <div
+      v-else-if="tasksStore.error && tasksStore.tasks.length === 0"
+      class="rounded-lg border border-red-200 bg-red-50 p-4"
+    >
+      <div class="flex items-start gap-3">
+        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">
+          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86l-8.4 14.5A1.5 1.5 0 0 0 3.18 20h17.64a1.5 1.5 0 0 0 1.29-2.24l-8.4-14.5a1.5 1.5 0 0 0-2.58 0Z" />
+          </svg>
+        </div>
+        <div class="flex-1">
+          <h2 class="text-sm font-semibold text-red-900">Не удалось загрузить задачи</h2>
+          <p class="mt-1 text-sm text-red-700">
+            {{ tasksStore.error }}
+          </p>
+          <div class="mt-4">
+            <AppButton variant="secondary" size="sm" @click="tasksStore.fetchTasks()">
+              Повторить
+            </AppButton>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <EmptyState
       v-else-if="tasksStore.tasks.length === 0"
       title="Задач пока нет"
